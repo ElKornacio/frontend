@@ -6,7 +6,9 @@ import {
   ModalBody,
   ModalContent,
   ModalCloseButton,
+  ModalHeader,
   ModalOverlay,
+  LightMode,
   Box,
   useDisclosure,
   Tooltip,
@@ -17,8 +19,13 @@ import * as Sentry from '@sentry/react';
 import QRCode from 'qrcode';
 import React from 'react';
 
+import type { Address as AddressType } from 'types/api/address';
+
 import qrCodeIcon from 'icons/qr_code.svg';
-import useIsMobile from 'lib/hooks/useIsMobile';
+import Address from 'ui/shared/address/Address';
+import AddressIcon from 'ui/shared/address/AddressIcon';
+import AddressLink from 'ui/shared/address/AddressLink';
+import CopyToClipboard from 'ui/shared/CopyToClipboard';
 
 const SVG_OPTIONS = {
   margin: 0,
@@ -26,19 +33,18 @@ const SVG_OPTIONS = {
 
 interface Props {
   className?: string;
-  hash: string;
+  address: AddressType;
   isLoading?: boolean;
 }
 
-const AddressQrCode = ({ hash, className, isLoading }: Props) => {
+const AddressQrCode = ({ address, className, isLoading }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const isMobile = useIsMobile();
   const [ qr, setQr ] = React.useState('');
   const [ error, setError ] = React.useState('');
 
   React.useEffect(() => {
     if (isOpen) {
-      QRCode.toString(hash, SVG_OPTIONS, (error: Error | null | undefined, svg: string) => {
+      QRCode.toString(address.hash, SVG_OPTIONS, (error: Error | null | undefined, svg: string) => {
         if (error) {
           setError('We were unable to generate QR code.');
           Sentry.captureException(error, { tags: { source: 'qr_code' } });
@@ -49,7 +55,7 @@ const AddressQrCode = ({ hash, className, isLoading }: Props) => {
         setQr(svg);
       });
     }
-  }, [ hash, isOpen, onClose ]);
+  }, [ address.hash, isOpen, onClose ]);
 
   if (isLoading) {
     return <Skeleton className={ className } w="36px" h="32px" borderRadius="base"/>;
@@ -69,15 +75,36 @@ const AddressQrCode = ({ hash, className, isLoading }: Props) => {
           icon={ <Icon as={ qrCodeIcon } boxSize={ 5 }/> }
         />
       </Tooltip>
-      <Modal isOpen={ isOpen } onClose={ onClose } size={{ base: 'full', lg: 'sm' }}>
-        <ModalOverlay/>
-        <ModalContent bgColor={ error ? undefined : 'white' }>
-          { isMobile && <ModalCloseButton/> }
-          <ModalBody mb={ 0 }>
-            { error ? <Alert status="warning">{ error }</Alert> : <Box dangerouslySetInnerHTML={{ __html: qr }}/> }
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+
+      { error && (
+        <Modal isOpen={ isOpen } onClose={ onClose } size={{ base: 'full', lg: 'sm' }}>
+          <ModalOverlay/>
+          <ModalContent>
+            <ModalBody mb={ 0 }>
+              <Alert status="warning">{ error }</Alert>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      ) }
+      { !error && (
+        <LightMode>
+          <Modal isOpen={ isOpen } onClose={ onClose } size={{ base: 'full', lg: 'sm' }}>
+            <ModalOverlay/>
+            <ModalContent>
+              <ModalHeader fontWeight="500" textStyle="h3" mb={ 4 }>Address QR code</ModalHeader>
+              <ModalCloseButton/>
+              <ModalBody mb={ 0 }>
+                <Address mb={ 3 }>
+                  <AddressIcon address={ address } mr={ 2 }/>
+                  <AddressLink hash={ address.hash } isDisabled fontSize="md" fontWeight={ 500 } color="text"/>
+                  <CopyToClipboard text={ address.hash }/>
+                </Address>
+                <Box p={ 4 } dangerouslySetInnerHTML={{ __html: qr }}/>
+              </ModalBody>
+            </ModalContent>
+          </Modal>
+        </LightMode>
+      ) }
     </>
   );
 };
