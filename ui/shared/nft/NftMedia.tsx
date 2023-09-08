@@ -15,7 +15,7 @@ import NftImageWithFullscreen from './NftImageWithFullscreen';
 import NftVideo from './NftVideo';
 import NftVideoWithFullscreen from './NftVideoWithFullscreen';
 import type { MediaType } from './utils';
-import { getPreliminaryMediaType } from './utils';
+import { getPreliminaryMediaType, mediaStyleProps } from './utils';
 
 interface Props {
   url: string | null;
@@ -33,7 +33,12 @@ const NftMedia = ({ url, className, isLoading, withFullscreen }: Props) => {
   const { ref, inView } = useInView({ triggerOnce: true });
 
   React.useEffect(() => {
-    if (!url || isLoading || !inView) {
+    if (!url) {
+      // stub may have an url, but real data may not
+      setIsMediaLoading(false);
+      return;
+    }
+    if (isLoading || !inView) {
       return;
     }
 
@@ -73,7 +78,8 @@ const NftMedia = ({ url, className, isLoading, withFullscreen }: Props) => {
 
   const content = (() => {
     if (!url || isLoadingError) {
-      return <NftFallback/>;
+      const styleProps = withFullscreen ? {} : mediaStyleProps;
+      return <NftFallback { ...styleProps }/>;
     }
 
     const props = {

@@ -22,10 +22,7 @@ import React from 'react';
 import type { Address as AddressType } from 'types/api/address';
 
 import qrCodeIcon from 'icons/qr_code.svg';
-import Address from 'ui/shared/address/Address';
-import AddressIcon from 'ui/shared/address/AddressIcon';
-import AddressLink from 'ui/shared/address/AddressLink';
-import CopyToClipboard from 'ui/shared/CopyToClipboard';
+import AddressEntity from 'ui/shared/entities/address/AddressEntity';
 
 const SVG_OPTIONS = {
   margin: 0,
@@ -94,11 +91,13 @@ const AddressQrCode = ({ address, className, isLoading }: Props) => {
               <ModalHeader fontWeight="500" textStyle="h3" mb={ 4 }>Address QR code</ModalHeader>
               <ModalCloseButton/>
               <ModalBody mb={ 0 }>
-                <Address mb={ 3 }>
-                  <AddressIcon address={ address } mr={ 2 }/>
-                  <AddressLink hash={ address.hash } isDisabled fontSize="md" fontWeight={ 500 } color="text"/>
-                  <CopyToClipboard text={ address.hash }/>
-                </Address>
+                <AddressEntity
+                  address={ address }
+                  mb={ 3 }
+                  noLink
+                  fontWeight={ 500 }
+                  color="text"
+                />
                 <Box p={ 4 } dangerouslySetInnerHTML={{ __html: qr }}/>
               </ModalBody>
             </ModalContent>
