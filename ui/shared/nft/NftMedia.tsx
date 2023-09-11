@@ -1,4 +1,4 @@
-import { AspectRatio, chakra, Skeleton } from '@chakra-ui/react';
+import { AspectRatio, chakra, Skeleton, useDisclosure } from '@chakra-ui/react';
 import React from 'react';
 import { useInView } from 'react-intersection-observer';
 
@@ -9,11 +9,11 @@ import useFetch from 'lib/hooks/useFetch';
 
 import NftFallback from './NftFallback';
 import NftHtml from './NftHtml';
-import NftHtmlWithFullscreen from './NftHtmlWithFullscreen';
+import NftHtmlFullscreen from './NftHtmlFullscreen';
 import NftImage from './NftImage';
-import NftImageWithFullscreen from './NftImageWithFullscreen';
+import NftImageFullscreen from './NftImageFullscreen';
 import NftVideo from './NftVideo';
-import NftVideoWithFullscreen from './NftVideoWithFullscreen';
+import NftVideoFullscreen from './NftVideoFullscreen';
 import type { MediaType } from './utils';
 import { getPreliminaryMediaType, mediaStyleProps } from './utils';
 
@@ -76,6 +76,8 @@ const NftMedia = ({ url, className, isLoading, withFullscreen }: Props) => {
     setIsLoadingError(true);
   }, []);
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const content = (() => {
     if (!url || isLoadingError) {
       const styleProps = withFullscreen ? {} : mediaStyleProps;
@@ -86,15 +88,39 @@ const NftMedia = ({ url, className, isLoading, withFullscreen }: Props) => {
       src: url,
       onLoad: handleMediaLoaded,
       onError: handleMediaLoadError,
+      ...(withFullscreen ? { onClick: onOpen } : {}),
     };
 
     switch (type) {
       case 'video':
-        return withFullscreen ? <NftVideoWithFullscreen { ...props }/> : <NftVideo { ...props }/>;
+        return <NftVideo { ...props }/>;
       case 'html':
-        return withFullscreen ? <NftHtmlWithFullscreen { ...props }/> : <NftHtml { ...props }/>;
+        return <NftHtml { ...props }/>;
       case 'image':
-        return withFullscreen ? <NftImageWithFullscreen { ...props }/> : <NftImage { ...props }/>;
+        return <NftImage { ...props }/>;
+      default:
+        return null;
+    }
+  })();
+
+  const modal = (() => {
+    if (!url || !withFullscreen) {
+      return null;
+    }
+
+    const props = {
+      src: url,
+      isOpen,
+      onClose,
+    };
+
+    switch (type) {
+      case 'video':
+        return <NftVideoFullscreen { ...props }/>;
+      case 'html':
+        return <NftHtmlFullscreen { ...props }/>;
+      case 'image':
+        return <NftImageFullscreen { ...props }/>;
       default:
         return null;
     }
@@ -117,6 +143,7 @@ const NftMedia = ({ url, className, isLoading, withFullscreen }: Props) => {
     >
       <>
         { content }
+        { modal }
         { isMediaLoading && <Skeleton position="absolute" left={ 0 } top={ 0 } w="100%" h="100%" zIndex="1"/> }
       </>
     </AspectRatio>
