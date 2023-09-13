@@ -63,6 +63,11 @@ export type NextPublicEnvs = {
   // utilities
   NEXT_PUBLIC_GIT_TAG?: string;
   NEXT_PUBLIC_GIT_COMMIT_SHA?: string;
+
+  // opengraph
+  NEXT_PUBLIC_OG_PROMOTE_BLOCKSCOUT?: 'true' | 'false';
+  NEXT_PUBLIC_OG_DESCRIPTION?: string;
+  NEXT_PUBLIC_OG_IMAGE_URL?: string;
 }
 & NextPublicEnvsAccount
 & NextPublicEnvsMarketplace
